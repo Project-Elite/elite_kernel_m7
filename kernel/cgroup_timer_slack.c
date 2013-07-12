@@ -14,9 +14,15 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
+#include <linux/export.h>
 #include <linux/cgroup.h>
 #include <linux/slab.h>
 #include <linux/err.h>
+
+#include <linux/cgroup.h>
+#include <linux/fs.h>
+#include <linux/uaccess.h>
+#include <linux/seq_file.h>
 
 struct cgroup_subsys timer_slack_subsys;
 struct tslack_cgroup {
