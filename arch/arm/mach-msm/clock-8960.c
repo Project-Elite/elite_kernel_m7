@@ -556,7 +556,7 @@ static struct pll_clk pll15_clk = {
 	.parent = &pxo_clk.c,
 	.c = {
 		.dbg_name = "pll15_clk",
-		.rate = 900000000,
+		.rate = 975000000,
 		.ops = &clk_ops_local_pll,
 		CLK_INIT(pll15_clk.c),
 		.warned = true,
@@ -3426,6 +3426,7 @@ static struct clk_freq_tbl clk_tbl_gfx3d[] = {
 	F_GFX3D(228571000, pll2,  2,  7),
 	F_GFX3D(266667000, pll2,  1,  3),
 	F_GFX3D(320000000, pll2,  2,  5),
+	F_GFX3D(360000000, pll2,  2,  5),
 	F_GFX3D(400000000, pll2,  1,  2),
 	F_GFX3D(450000000, pll15, 1,  2),
 	F_END
@@ -3448,6 +3449,7 @@ static struct clk_freq_tbl clk_tbl_gfx3d_8960[] = {
 	F_GFX3D(228571000, pll2,  2,  7),
 	F_GFX3D(266667000, pll2,  1,  3),
 	F_GFX3D(320000000, pll2,  2,  5),
+	F_GFX3D(360000000, pll2,  2,  5),
 	F_GFX3D(400000000, pll2,  1,  2),
 	F_GFX3D(450000000, pll15, 1,  2),
 	F_END
@@ -6758,9 +6760,9 @@ static void __init reg_init(void)
 	}
 
 	if (cpu_is_apq8064()) {
-			pll15_config.l = 0x21 | BVAL(31, 7, 0x620);
-   			pll15_config.m = 0x1;
-    		pll15_config.n = 0x3; 
+		pll15_config.l = 0x21 | BVAL(31, 7, 0x620)	;
+		pll15_config.m = 0x1;	
+		pll15_config.n = 0x3; 
 		
 		configure_sr_pll(&pll15_config, &pll15_regs, 0);
 	} else if (cpu_is_apq8064ab()) {
