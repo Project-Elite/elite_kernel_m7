@@ -414,7 +414,7 @@ static void power_key_check_reset_work_func(struct work_struct *dummy)
 		} else if (board_mfg_mode() == MFG_MODE_NORMAL) {
 #ifndef CONFIG_POWER_VOLUP_RESET
 			
-			pocket_mode = power_key_check_in_pocket(1);
+			pocket_mode = power_key_check_in_pocket();
 			if (pocket_mode) {
 				printk(KERN_INFO "[KEY] power_key_check_in_pocket = %d\n", pocket_mode);
 				aa->clear_hw_reset();
