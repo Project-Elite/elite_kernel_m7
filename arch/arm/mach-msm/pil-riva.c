@@ -108,9 +108,6 @@
 #define HWIO_RIVA_PLL_MODE_OUTM(m,v) \
         out_dword_masked_ns(HWIO_RIVA_PLL_MODE_ADDR,m,v,HWIO_RIVA_PLL_MODE_IN)
 
-#define APQ8064_HW_VER_2_0   0x2
-#define HW_VER_ID_VIRT      (MSM_TLMM_BASE + 0x00002054)
-
 #define TRUE 1
 #define FALSE 0
 
@@ -224,12 +221,7 @@ static int pil_riva_reset(struct pil_desc *pil)
 	unsigned long start_addr = drv->start_addr;
 	bool use_cxo = cxo_is_needed(drv);
 #ifdef CONFIG_QUALCOMM_WLAN_PXO
-	u32 nLoopCount = 25;
-	u32 nRetryCount = 5;
-	u32 hw_ver_id;
-	hw_ver_id = (readl(HW_VER_ID_VIRT)& 0xf0000000) >> 28;
-
-	printk("[WLAN][SSR] Get hw_ver_id = %#x\n", hw_ver_id);
+	u32 nLoopCount = 5;
 #endif
 
 	
@@ -237,10 +229,6 @@ static int pil_riva_reset(struct pil_desc *pil)
 	reg |= RIVA_PMU_A2XB_CFG_EN;
 	writel_relaxed(reg, base + RIVA_PMU_A2XB_CFG);
 
-#ifdef CONFIG_QUALCOMM_WLAN_PXO
-	while (nRetryCount > 0)
-	{
-#endif
 	
 	reg = readl_relaxed(RIVA_PLL_MODE);
 	reg &= ~(PLL_MODE_BYPASSNL | PLL_MODE_OUTCTRL | PLL_MODE_RESET_N);
@@ -277,45 +265,29 @@ static int pil_riva_reset(struct pil_desc *pil)
 
 	
 #ifdef CONFIG_QUALCOMM_WLAN_PXO
-	if (hw_ver_id >= APQ8064_HW_VER_2_0) {
-		printk("[WLAN][SSR] Wait for PLL warm-up\n");
-		
-		while(nLoopCount > 0) 
-		{
-			udelay(CLOCK_PLL_WARMUP_TIME_US);
-			if(in_dword_masked(HWIO_PLL_LOCK_DET_STATUS_ADDR, 0xffffffff) & (1 << 13))
-			{break;}
-			nLoopCount--;
-		}
-
-		if(nLoopCount == 0)
-		{
-			
-			
-			printk("[WLAN][SSR] PLL lock detection failed!, retry %d\n", (5-nRetryCount));
-                        nRetryCount--;
-			nLoopCount = 25;
-			continue;
-		}
-		printk("[WLAN][SSR] Check PLL lock detection passed\n");
-
-		HWIO_RIVA_PLL_MODE_OUTM(0x1, (u32)(1) << (0x0)); 
-
-		if (Clock_WaitForPLLActive(CLOCK_SOURCE_PLL13) == FALSE)
-		
-		{
-			nRetryCount--;
-			nLoopCount = 25;
-			continue;
-		}
-		printk("[WLAN][SSR] Wait for PLL Active ...OK!\n");
-		break;
+	printk("[WLAN][SSR] Wait for PLL warm-up\n");
+	while(nLoopCount > 0) 
+	{
+		udelay(CLOCK_PLL_WARMUP_TIME_US);
+		if(in_dword_masked(HWIO_PLL_LOCK_DET_STATUS_ADDR, 0xffffffff) & (1 << 13))
+		{break;}
+		nLoopCount--;
 	}
+
+	if(nLoopCount == 0)
+	{
+		printk("[WLAN][SSR] PLL lock detection failed!\n");
+		return -1;
+	}
+	printk("[WLAN][SSR] Check PLL lock detection passed\n");
+
+	HWIO_RIVA_PLL_MODE_OUTM(0x1, (u32)(1) << (0x0)); 
+
+	if (Clock_WaitForPLLActive(CLOCK_SOURCE_PLL13) == FALSE)
+	{return -1;}
+	printk("[WLAN][SSR] Wait for PLL Active ...OK!\n");
 #endif
 	
-#ifdef CONFIG_QUALCOMM_WLAN_PXO
-	}
-#endif
 
 	
 	sel = readl_relaxed(base + RIVA_PMU_ROOT_CLK_SEL);
@@ -358,12 +330,11 @@ static int pil_riva_reset(struct pil_desc *pil)
 
 	
 #ifdef CONFIG_QUALCOMM_WLAN_PXO
-	if (hw_ver_id >= APQ8064_HW_VER_2_0) {
-		printk("[WLAN][SSR] Use PXO for RIVA\n");
-		HWIO_RIVA_RESET_OUTM((0x2),(u32)(1) << (0x1)); 
-		HWIO_RIVA_XO_SRC_CLK_CTL_OUTM((0x00000004), (u32)(1) << (0x2)); 
-		HWIO_RIVA_RESET_OUTM((0x2),(u32)(0) << (0x1)); 
-	}
+	printk("[WLAN][SSR] Use PXO for RIVA\n");
+
+	HWIO_RIVA_RESET_OUTM((0x2),(u32)(1) << (0x1)); 
+	HWIO_RIVA_XO_SRC_CLK_CTL_OUTM((0x00000004), (u32)(1) << (0x2)); 
+	HWIO_RIVA_RESET_OUTM((0x2),(u32)(0) << (0x1)); 
 #endif
 	
 

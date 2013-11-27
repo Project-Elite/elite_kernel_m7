@@ -26,6 +26,7 @@ struct mmc_bus_ops {
 	int (*power_restore)(struct mmc_host *);
 	int (*alive)(struct mmc_host *);
 	int (*poweroff_notify)(struct mmc_host *, int notify);
+	int (*housekeeping)(struct mmc_host *, int start);
 };
 
 void mmc_attach_bus(struct mmc_host *host, const struct mmc_bus_ops *ops);
@@ -49,6 +50,7 @@ void mmc_set_timing(struct mmc_host *host, unsigned int timing);
 void mmc_set_driver_type(struct mmc_host *host, unsigned int drv_type);
 void mmc_power_off(struct mmc_host *host);
 extern int mmc_send_status(struct mmc_card *, u32 *);
+extern int mmc_card_stop_bkops(struct mmc_host *);
 extern int is_wifi_mmc_host(struct mmc_host *mmc);
 static inline void mmc_delay(unsigned int ms)
 {
@@ -63,7 +65,6 @@ static inline void mmc_delay(unsigned int ms)
 }
 
 void mmc_rescan(struct work_struct *work);
-void mmc_stats(struct work_struct *work);
 void mmc_start_host(struct mmc_host *host);
 void mmc_stop_host(struct mmc_host *host);
 

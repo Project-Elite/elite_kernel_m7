@@ -131,8 +131,9 @@
 #define HTC_WQ 1
 #define HTC_SUSPEND 1
 #define HTC_ATTR 1
+#define cywee
 
-#ifdef CONFIG_R3GD20_NEW_SENSOR_TYPE
+#ifdef cywee
 #define FIFO_LEVEL_MESK		0x1F
 #endif
 
@@ -561,7 +562,7 @@ static int r3gd20_update_odr(struct r3gd20_data *gyro,
 		if ((odr_table[i].poll_rate_ms <= poll_interval_ms) || (i == 0))
 			break;
 	}
-#ifdef CONFIG_R3GD20_NEW_SENSOR_TYPE
+#ifdef cywee
 	if (poll_interval_ms > 20) {
 		config[1] = 0x00;
 	} else {
@@ -584,7 +585,7 @@ static int r3gd20_update_odr(struct r3gd20_data *gyro,
 	return err;
 }
 
-#ifdef CONFIG_R3GD20_NEW_SENSOR_TYPE
+#ifdef cywee
 static int r3gd20_get_status(struct r3gd20_data *gyro ,unsigned char *status)
 {
 	int err = 0;
@@ -656,13 +657,11 @@ static void polling_do_work(struct work_struct *w)
 	struct r3gd20_data *gyro = g_gyro;
 	struct r3gd20_triple data_out;
 	int err;
-#ifdef CONFIG_R3GD20_NEW_SENSOR_TYPE
 	unsigned char status = 0;
-#endif
 
 	mutex_lock(&gyro->lock);
 
-#ifdef CONFIG_R3GD20_NEW_SENSOR_TYPE
+#ifdef cywee
 	err = r3gd20_get_status(gyro, &status);
 	if (err < 0)
 		dev_err(&gyro->client->dev, "get_gyroscope_status failed\n");
@@ -699,7 +698,7 @@ static void polling_do_work(struct work_struct *w)
 }
 #endif 
 
-#ifdef CONFIG_R3GD20_NEW_SENSOR_TYPE
+#ifdef cywee
 static int r3gd20_hw_init(struct r3gd20_data *gyro)
 {
 	int err;
@@ -1795,14 +1794,6 @@ static int r3gd20_probe(struct i2c_client *client,
 
 	I("%s: %s probed: device created successfully\n",
 			__func__, R3GD20_GYR_DEV_NAME);
-
-#ifdef CONFIG_R3GD20_NEW_SENSOR_TYPE
-	I("%s: %s probed: New Sensor type enabled\n",
-			__func__, R3GD20_GYR_DEV_NAME);
-#else
-	I("%s: %s probed: New Sensor type disabled\n",
-			__func__, R3GD20_GYR_DEV_NAME);
-#endif
 
 	return 0;
 

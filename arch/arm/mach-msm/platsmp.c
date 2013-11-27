@@ -41,16 +41,11 @@ extern void msm_secondary_startup(void);
 #define CPU3_EXIT_KERNEL_COUNTER_BASE			(CPU_FOOT_PRINT_BASE + 0x1C)
 static void init_cpu_debug_counter_for_cold_boot(void)
 {
-	static volatile bool is_cpu_debug_cnt_init = false;
-	if (!is_cpu_debug_cnt_init)
-	{
-		*(unsigned *)CPU0_EXIT_KERNEL_COUNTER_BASE = 0x0;
-		*(unsigned *)CPU1_EXIT_KERNEL_COUNTER_BASE = 0x0;
-		*(unsigned *)CPU2_EXIT_KERNEL_COUNTER_BASE = 0x0;
-		*(unsigned *)CPU3_EXIT_KERNEL_COUNTER_BASE = 0x0;
-		is_cpu_debug_cnt_init = true;
-		mb();
-	}
+	*(unsigned *)CPU0_EXIT_KERNEL_COUNTER_BASE = 0x0;
+	*(unsigned *)CPU1_EXIT_KERNEL_COUNTER_BASE = 0x0;
+	*(unsigned *)CPU2_EXIT_KERNEL_COUNTER_BASE = 0x0;
+	*(unsigned *)CPU3_EXIT_KERNEL_COUNTER_BASE = 0x0;
+	mb();
 }
 
 volatile int pen_release = -1;
@@ -211,7 +206,6 @@ int __cpuinit boot_secondary(unsigned int cpu, struct task_struct *idle)
 		__WARN();
 
 	if (per_cpu(cold_boot_done, cpu) == false) {
-		init_cpu_debug_counter_for_cold_boot();
 		ret = scm_set_boot_addr((void *)
 					virt_to_phys(msm_secondary_startup),
 					flag);
@@ -221,6 +215,7 @@ int __cpuinit boot_secondary(unsigned int cpu, struct task_struct *idle)
 			printk(KERN_DEBUG "Failed to set secondary core boot "
 					  "address\n");
 		per_cpu(cold_boot_done, cpu) = true;
+		init_cpu_debug_counter_for_cold_boot();
 	}
 
 	spin_lock(&boot_lock);
